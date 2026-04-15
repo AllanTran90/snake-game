@@ -3,6 +3,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
+//Game board size
 int width = 20;
 int height = 10;
 
@@ -30,7 +31,7 @@ while (restart)
     {
         Console.Clear();
 
-        Console.WriteLine($"Score: {snake.Count}");
+        Console.WriteLine($"Score: {snake.Count -3}");
 
         // draw field
         for (int y = 0; y < height; y++)
@@ -96,7 +97,7 @@ while (restart)
         {
             Console.Clear();
             Console.WriteLine("GAME OVER!");
-            Console.WriteLine($"Score: {snake.Count}");
+            Console.WriteLine($"Score: {snake.Count - 3}");
             Console.WriteLine("Press any key to restart...");
             Console.ReadKey(true);
             break; // go back to restart loop
