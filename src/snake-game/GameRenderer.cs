@@ -10,18 +10,28 @@ public static class GameRenderer
         {
             for (int x = 0; x < width; x++)
             {
-                if (snake.Any(p => p.x == x && p.y == y))
+                if (snake[0].x == x && snake[0].y == y)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write("O");
+                }
+                else if (snake.Any(p => p.x == x && p.y == y))
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.Write("o");
                 }
                 else if (x == food.x && y == food.y)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("X");
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.Write(".");
                 }
+
+                Console.ResetColor();
             }
 
             Console.WriteLine();

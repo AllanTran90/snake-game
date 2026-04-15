@@ -29,14 +29,22 @@ public class Game
 
     public void Run()
     {
+        Console.CursorVisible = false;
+        Console.SetCursorPosition(0, 0);
+       
+        
         bool gameOver = false;
 
         while (!gameOver)
         {
-            Console.Clear();
+            Console.SetCursorPosition(0, 0);
+            Console.ForegroundColor = ConsoleColor.Cyan;
             Console.WriteLine($"Score: {snake.Count - 3}");
+            Console.ResetColor();
 
             GameRenderer.DrawBoard(width, height, snake, food);
+            
+            Console.WriteLine();
 
             direction = Helpers.ReadInput(direction);
 
@@ -59,10 +67,11 @@ public class Game
 
         Console.Clear();
         Console.WriteLine("Game Over!");
-        Console.WriteLine($"Final score: {snake.Count - 3}");
         int finalScore = snake.Count - 3;
+        Console.WriteLine($"Final score: {finalScore}");
+        
 
-        HighscoreService.SaveScore(finalScore);
+        HighscoreService.TryAddScore(finalScore);
         HighscoreService.ShowTopScores();
     }
 
