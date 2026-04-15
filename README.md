@@ -60,5 +60,8 @@ A classic Snake game built in C# using the console.
 - Handling user input in console apps
 - File handling in C# (saving highscores)
 
+## Author:
+- Allan Tran
+
    
    
