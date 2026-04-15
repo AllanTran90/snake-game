@@ -42,24 +42,17 @@ while (restart)
   
         
         var head = snake[0];
-
-        (int x, int y) newHead = direction switch
-        {
-            "UP" => (head.x, head.y - 1),
-            "DOWN" => (head.x, head.y + 1),
-            "LEFT" => (head.x - 1, head.y),
-            _ => (head.x + 1, head.y)
-        };
+        var newHead = GetNewHead(head, direction);
 
         // 💀 wall collision
-        if (newHead.x < 0 || newHead.x >= width || newHead.y < 0 || newHead.y >= height)
+        if (IsWallCollision(newHead, width, height))
         {
             ShowGameOver(snake.Count - 3);
             break; // go back to restart loop
         }
 
         // 💀 self collision
-        if (snake.Any(p => p.x == newHead.x && p.y == newHead.y))
+        if (IsSelfCollision(newHead, snake))
         {
             ShowGameOver(snake.Count - 3);
             break;
@@ -145,4 +138,22 @@ string HandleInput(string direction)
     }
 
     return direction;
+}
+(int x, int y) GetNewHead((int x, int y) head, string direction)
+{
+    return direction switch
+    {
+        "UP" => (head.x, head.y - 1),
+        "DOWN" => (head.x, head.y + 1),
+        "LEFT" => (head.x - 1, head.y),
+        _ => (head.x + 1, head.y)
+    };
+}
+bool IsWallCollision((int x, int y) position, int width, int height)
+{
+    return position.x < 0 || position.x >= width || position.y < 0 || position.y >= height;
+}
+bool IsSelfCollision((int x, int y) position, List<(int x, int y)> snake)
+{
+    return snake.Any(p => p.x == position.x && p.y == position.y);
 }
