@@ -3,24 +3,18 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 
-//Game board size
+// Game board size
 int width = 20;
-int height = 15;
+int height = 10;
 
-// restart loop
+// Restart loop
 bool restart = true;
-
-Random rand = new Random();
 
 while (restart)
 {
-    // direction
     string direction = "RIGHT";
+    Random rand = new Random();
 
-    // random food
-    (int x, int y) food = (rand.Next(width), rand.Next(height));
-
-    // snake body
     List<(int x, int y)> snake = new List<(int, int)>
     {
         (5, 5),
@@ -28,109 +22,143 @@ while (restart)
         (3, 5)
     };
 
-    while (true)
+    (int x, int y) food = SpawnFood(rand, width, height, snake);
+
+    bool gameOver = false;
+
+    while (!gameOver)
     {
         Console.Clear();
-
         Console.WriteLine($"Score: {snake.Count - 3}");
-        
-        GameRenderer.DrawBoard(width, height, snake, food);
-        
-        // input
-        direction = HandleInput(direction);
-        
-  
-        
-        var head = snake[0];
-        var newHead = GetNewHead(head, direction);
 
-        // 💀 wall collision
-        if (IsWallCollision(newHead, width, height))
-        {
-            ShowGameOver(snake.Count - 3);
-            break; // go back to restart loop
-        }
+        DrawBoard(width, height, snake, food);
 
-        // 💀 self collision
-        if (IsSelfCollision(newHead, snake))
+        direction = ReadInput(direction);
+
+        MoveSnake(snake, direction);
+
+        if (CheckCollision(snake, width, height))
         {
-            ShowGameOver(snake.Count - 3);
+            gameOver = true;
             break;
         }
 
-        // check if we ate food
-        bool ateFood = newHead.x == food.x && newHead.y == food.y;
-
-        // add new head
-        snake.Insert(0, newHead);
-
-        if (ateFood)
+        if (CheckFood(snake, food))
         {
-            food = (rand.Next(width), rand.Next(height));
-        }
-        else
-        {
-            snake.RemoveAt(snake.Count - 1);
+            GrowSnake(snake);
+            food = SpawnFood(rand, width, height, snake);
         }
 
-        Thread.Sleep(150);
+        Thread.Sleep(200);
     }
-} 
-void ShowGameOver(int score)
-{
+
     Console.Clear();
-    Console.WriteLine("GAME OVER!");
-    Console.WriteLine($"Score: {score}");
-    Console.WriteLine("Press any key to restart...");
-    Console.ReadKey(true);
+    Console.WriteLine("Game Over!");
+    Console.WriteLine($"Final score: {snake.Count - 3}");
+    Console.WriteLine("Play again? (y/n)");
+
+    string answer = Console.ReadLine()?.ToLower() ?? "n";
+    restart = answer == "y";
 }
 
-
-string HandleInput(string direction)
+void DrawBoard(int width, int height, List<(int x, int y)> snake, (int x, int y) food)
 {
-    if (Console.KeyAvailable)
+    for (int y = 0; y < height; y++)
     {
-        var key = Console.ReadKey(true).Key;
-
-        while (Console.KeyAvailable)
+        for (int x = 0; x < width; x++)
         {
-            Console.ReadKey(true);
+            if (snake[0].x == x && snake[0].y == y)
+            {
+                Console.Write("O");
+            }
+            else if (snake.Any(p => p.x == x && p.y == y))
+            {
+                Console.Write("o");
+            }
+            else if (food.x == x && food.y == y)
+            {
+                Console.Write("X");
+            }
+            else
+            {
+                Console.Write(".");
+            }
         }
 
-        switch (key)
-        {
-            case ConsoleKey.UpArrow:
-                direction = "UP";
-                break;
-            case ConsoleKey.DownArrow:
-                direction = "DOWN";
-                break;
-            case ConsoleKey.LeftArrow:
-                direction = "LEFT";
-                break;
-            case ConsoleKey.RightArrow:
-                direction = "RIGHT";
-                break;
-        }
+        Console.WriteLine();
     }
+}
 
-    return direction;
-}
-(int x, int y) GetNewHead((int x, int y) head, string direction)
+string ReadInput(string currentDirection)
 {
-    return direction switch
+    if (!Console.KeyAvailable)
+        return currentDirection;
+
+    ConsoleKey key = Console.ReadKey(true).Key;
+
+    if (key == ConsoleKey.UpArrow && currentDirection != "DOWN")
+        return "UP";
+
+    if (key == ConsoleKey.DownArrow && currentDirection != "UP")
+        return "DOWN";
+
+    if (key == ConsoleKey.LeftArrow && currentDirection != "RIGHT")
+        return "LEFT";
+
+    if (key == ConsoleKey.RightArrow && currentDirection != "LEFT")
+        return "RIGHT";
+
+    return currentDirection;
+}
+
+void MoveSnake(List<(int x, int y)> snake, string direction)
+{
+    (int x, int y) head = snake[0];
+
+    if (direction == "RIGHT")
+        head.x++;
+    else if (direction == "LEFT")
+        head.x--;
+    else if (direction == "UP")
+        head.y--;
+    else if (direction == "DOWN")
+        head.y++;
+
+    snake.Insert(0, head);
+    snake.RemoveAt(snake.Count - 1);
+}
+
+bool CheckCollision(List<(int x, int y)> snake, int width, int height)
+{
+    (int x, int y) head = snake[0];
+
+    // Wall collision
+    if (head.x < 0 || head.x >= width || head.y < 0 || head.y >= height)
+        return true;
+
+    // Self collision
+    return snake.Skip(1).Any(part => part.x == head.x && part.y == head.y);
+}
+
+bool CheckFood(List<(int x, int y)> snake, (int x, int y) food)
+{
+    return snake[0].x == food.x && snake[0].y == food.y;
+}
+
+void GrowSnake(List<(int x, int y)> snake)
+{
+    snake.Add(snake.Last());
+}
+
+(int x, int y) SpawnFood(Random rand, int width, int height, List<(int x, int y)> snake)
+{
+    (int x, int y) foodPosition;
+
+    do
     {
-        "UP" => (head.x, head.y - 1),
-        "DOWN" => (head.x, head.y + 1),
-        "LEFT" => (head.x - 1, head.y),
-        _ => (head.x + 1, head.y)
-    };
-}
-bool IsWallCollision((int x, int y) position, int width, int height)
-{
-    return position.x < 0 || position.x >= width || position.y < 0 || position.y >= height;
-}
-bool IsSelfCollision((int x, int y) position, List<(int x, int y)> snake)
-{
-    return snake.Any(p => p.x == position.x && p.y == position.y);
+        foodPosition = (rand.Next(width), rand.Next(height));
+    }
+    while (snake.Any(p => p.x == foodPosition.x && p.y == foodPosition.y));
+
+    return foodPosition;
 }
