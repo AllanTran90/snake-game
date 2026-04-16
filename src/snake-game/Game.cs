@@ -43,8 +43,6 @@ public class Game
             Console.ResetColor();
 
             GameRenderer.DrawBoard(width, height, snake, food);
-            
-            Console.WriteLine();
 
             direction = Helpers.ReadInput(direction);
 

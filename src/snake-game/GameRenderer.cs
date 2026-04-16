@@ -15,7 +15,7 @@ public static class GameRenderer
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write("O");
                 }
-                else if (snake.Any(p => p.x == x && p.y == y))
+                else if (snake.Skip(1).Any(p => p.x == x && p.y == y))
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGreen;
                     Console.Write("o");
